@@ -1,11 +1,13 @@
 package com.sample_app;
 
-import android.app.ProgressDialog;
+import android.app.Activity;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -22,6 +24,8 @@ import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
     private ArrayAdapter<String> mAdapter = null;
+    private String mJsonString = null;
+    Activity activity = this;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,6 +35,17 @@ public class MainActivity extends AppCompatActivity {
         task.execute();
         ListView listView = (ListView) findViewById(R.id.list_view);
         listView.setAdapter(mAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3){
+                String name = mAdapter.getItem(position);
+                if (mJsonString != null) {
+                    Intent intent = new Intent(activity, DetailActivity.class).putExtra(Intent.EXTRA_TEXT, name);
+                    intent.putExtra("JSON String", mJsonString);
+                    startActivity(intent);
+                }
+            }
+        });
     }
 
     public class FetchTask extends AsyncTask<String, Void, String[]> {
@@ -80,7 +95,9 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 Log.d(LOG_TAG, jsonStr);
+                mJsonString = jsonStr;
                 JSONArray foodJson =  new JSONArray(jsonStr);
+
                 resultStrs = new String[foodJson.length()];
                 for (int i=0; i < foodJson.length(); i++) {
                     JSONObject object = foodJson.getJSONObject(i);
